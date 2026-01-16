@@ -6,14 +6,14 @@ compatibility_date = "2024-01-01"
 # 请确保先执行: npx wrangler r2 bucket create essay-images
 [[r2_buckets]]
 binding = "MY_BUCKET"
-bucket_name = "essay-images"
+bucket_name = "picturebag"
 
 # [绑定 D1 数据库]
 # 请确保先执行: npx wrangler d1 create essay-db
 # 并将生成的 database_id 填入下方
 [[d1_databases]]
 binding = "DB"
-database_name = "essay-db"
+database_name = "ai-novel-assessment"
 database_id = "71cc1d2a-ba2a-480c-b62e-3f6950b1b398"
 
 # [环境变量]
