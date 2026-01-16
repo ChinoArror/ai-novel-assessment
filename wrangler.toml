@@ -14,7 +14,7 @@ bucket_name = "essay-images"
 [[d1_databases]]
 binding = "DB"
 database_name = "essay-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+database_id = "71cc1d2a-ba2a-480c-b62e-3f6950b1b398"
 
 # [环境变量]
 # 注意：API KEY 建议使用 `npx wrangler secret put` 上传，不要明文写在这里
