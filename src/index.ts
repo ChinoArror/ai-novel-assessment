@@ -60,6 +60,21 @@ app.get('/', (c) => {
             <label class="block text-sm font-bold text-gray-700 mb-2">题目要求 / Topic Requirements</label>
             <textarea id="topic" class="w-full border border-gray-300 p-4 rounded-lg h-36 focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm" placeholder="请粘贴完整的作文题目要求..."></textarea>
           </div>
+
+          <!-- Model Selection -->
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+             <label class="block text-sm font-bold text-gray-700 mb-2">选择批改模型 / Select Models</label>
+             <div class="flex gap-6">
+                 <label class="inline-flex items-center cursor-pointer">
+                     <input type="checkbox" id="useGemini" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500" checked>
+                     <span class="ml-2 text-gray-700 font-medium">✨ Gemini 1.5 Pro</span>
+                 </label>
+                 <label class="inline-flex items-center cursor-pointer">
+                     <input type="checkbox" id="useDeepSeek" class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500" checked>
+                     <span class="ml-2 text-gray-700 font-medium">🧠 DeepSeek V3</span>
+                 </label>
+             </div>
+          </div>
           
           <button onclick="handleUpload()" id="btn" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition transform hover:scale-[1.01] font-bold text-lg shadow-lg">
             🚀 开始批改 (Start Grading)
@@ -120,10 +135,13 @@ app.get('/', (c) => {
           const files = document.getElementById('files').files;
           const topic = document.getElementById('topic').value;
           const type = document.getElementById('type').value;
+          const useGemini = document.getElementById('useGemini').checked;
+          const useDeepSeek = document.getElementById('useDeepSeek').checked;
 
           if (!pwd) return alert("❌ 请输入密码");
           if (files.length === 0 || files.length > 3) return alert("❌ 请上传 1-3 张图片");
           if (!topic) return alert("❌ 请输入题目");
+          if (!useGemini && !useDeepSeek) return alert("❌ 请至少选择一个模型");
 
           const btn = document.getElementById('btn');
           btn.disabled = true;
@@ -140,6 +158,8 @@ app.get('/', (c) => {
           }
           formData.append('topic', topic);
           formData.append('type', type);
+          formData.append('useGemini', useGemini);
+          formData.append('useDeepSeek', useDeepSeek);
 
           try {
             const res = await fetch('/api/grade', {
@@ -164,8 +184,20 @@ app.get('/', (c) => {
             document.getElementById('ocrContent').textContent = data.ocr_text;
 
             // Render Markdown
-            document.getElementById('geminiResult').innerHTML = marked.parse(data.gemini_result);
-            document.getElementById('deepseekResult').innerHTML = marked.parse(data.deepseek_result);
+            // Render Markdown
+            if (data.gemini_result) {
+               document.getElementById('geminiResult').innerHTML = marked.parse(data.gemini_result);
+               document.getElementById('geminiResult').parentElement.classList.remove('hidden');
+            } else {
+               document.getElementById('geminiResult').parentElement.classList.add('hidden');
+            }
+            
+            if (data.deepseek_result) {
+               document.getElementById('deepseekResult').innerHTML = marked.parse(data.deepseek_result);
+               document.getElementById('deepseekResult').parentElement.classList.remove('hidden');
+            } else {
+               document.getElementById('deepseekResult').parentElement.classList.add('hidden');
+            }
 
             appendLog("✅ 所有任务完成。");
             document.getElementById('statusLogs').classList.remove('hidden');
@@ -198,6 +230,8 @@ app.post('/api/grade', async (c) => {
     const body = await c.req.parseBody();
     const topic = body['topic'] as string;
     const type = body['type'] as string;
+    const useGemini = body['useGemini'] === 'true';
+    const useDeepSeek = body['useDeepSeek'] === 'true';
 
     // Handle files (Hono parseBody handles multiple files as array or single)
     let files: File[] = [];
@@ -245,11 +279,15 @@ app.post('/api/grade', async (c) => {
     // 3. Generate Prompt
     const gradePrompt = getPrompt(type, topic, ocrText);
 
-    // 4. Parallel Grading (Gemini + DeepSeek)
-    const [geminiRes, deepseekRes] = await Promise.all([
-      callGeminiGrading(c.env.GEMINI_API_KEY, gradePrompt),
-      callDeepSeekGrading(c.env.DEEPSEEK_API_KEY, gradePrompt)
-    ]);
+    // 4. Parallel Grading (Gemini + DeepSeek based on selection)
+    const promises: Promise<any>[] = [];
+    if (useGemini) promises.push(callGeminiGrading(c.env.GEMINI_API_KEY, gradePrompt));
+    else promises.push(Promise.resolve(null));
+
+    if (useDeepSeek) promises.push(callDeepSeekGrading(c.env.DEEPSEEK_API_KEY, gradePrompt));
+    else promises.push(Promise.resolve(null));
+
+    const [geminiRes, deepseekRes] = await Promise.all(promises);
 
     // 5. Save Record
     c.executionCtx.waitUntil(
