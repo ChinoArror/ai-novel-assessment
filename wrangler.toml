@@ -20,4 +20,4 @@ database_id = "71cc1d2a-ba2a-480c-b62e-3f6950b1b398"
 # 注意：API KEY 建议使用 `npx wrangler secret put` 上传，不要明文写在这里
 # ACCESS_PASSWORD 可以在这里设个默认值，生产环境也建议用 secret 覆盖
 [vars]
-ACCESS_PASSWORD = "change_me_123"
+ACCESS_PASSWORD = "Qwerasdf"
