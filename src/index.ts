@@ -274,7 +274,7 @@ app.post('/api/grade', async (c) => {
 // --- Helpers ---
 
 async function callGeminiOCR(apiKey: string, images: { base64: string, mime: string }[]) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
   // Construct parts: Text Instruction + Image1 + Image2 ...
   const parts: any[] = [
@@ -305,7 +305,7 @@ async function callGeminiOCR(apiKey: string, images: { base64: string, mime: str
 }
 
 async function callGeminiGrading(apiKey: string, prompt: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -313,7 +313,10 @@ async function callGeminiGrading(apiKey: string, prompt: string) {
       contents: [{ parts: [{ text: prompt }] }]
     })
   });
-  if (!response.ok) throw new Error(`Gemini Grading Failed`);
+  if (!response.ok) {
+    const txt = await response.text();
+    throw new Error(`Gemini Grading Failed: ${response.status} - ${txt}`);
+  }
   const data: any = await response.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text || "Gemini Error";
 }
