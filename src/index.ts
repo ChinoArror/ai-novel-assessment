@@ -312,7 +312,7 @@ app.post('/api/grade', async (c) => {
 // --- Helpers ---
 
 async function callGeminiOCR(apiKey: string, images: { base64: string, mime: string }[]) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
 
   // Construct parts: Text Instruction + Image1 + Image2 ...
   const parts: any[] = [
