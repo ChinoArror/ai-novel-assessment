@@ -214,13 +214,22 @@ app.post('/api/grade', async (c) => {
     console.log(`Processing ${files.length} images...`);
 
     // 1. Parallel Upload to R2 & Base64 Conversion
+    // 1. Parallel Upload to R2 & Base64 Conversion
     const uploadPromises = files.map(async (f, idx) => {
       const arrBuf = await f.arrayBuffer();
       const key = `essays/${Date.now()}_${idx}_${f.name}`;
       // Async upload, don't await strictly if speed needed, but safety first
       await c.env.MY_BUCKET.put(key, arrBuf);
+
+      let binary = '';
+      const bytes = new Uint8Array(arrBuf);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i += 32768) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 32768)));
+      }
+
       return {
-        base64: btoa(String.fromCharCode(...new Uint8Array(arrBuf))),
+        base64: btoa(binary),
         mime: f.type || 'image/jpeg'
       };
     });
