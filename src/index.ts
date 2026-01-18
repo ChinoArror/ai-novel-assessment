@@ -274,7 +274,7 @@ app.post('/api/grade', async (c) => {
 // --- Helpers ---
 
 async function callGeminiOCR(apiKey: string, images: { base64: string, mime: string }[]) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   // Construct parts: Text Instruction + Image1 + Image2 ...
   const parts: any[] = [
@@ -298,6 +298,9 @@ async function callGeminiOCR(apiKey: string, images: { base64: string, mime: str
 
   if (!response.ok) {
     const txt = await response.text();
+    if (response.status === 404) {
+      throw new Error(`Gemini Model Not Found (404). Ensure you are using an API Key from Google AI Studio (aistudio.google.com), NOT Google Cloud Console. Details: ${txt}`);
+    }
     throw new Error(`Gemini OCR Failed: ${response.status} - ${txt}`);
   }
   const data: any = await response.json();
@@ -305,7 +308,7 @@ async function callGeminiOCR(apiKey: string, images: { base64: string, mime: str
 }
 
 async function callGeminiGrading(apiKey: string, prompt: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -315,6 +318,9 @@ async function callGeminiGrading(apiKey: string, prompt: string) {
   });
   if (!response.ok) {
     const txt = await response.text();
+    if (response.status === 404) {
+      throw new Error(`Gemini Model Not Found (404). Ensure you are using an API Key from Google AI Studio (aistudio.google.com), NOT Google Cloud Console. Details: ${txt}`);
+    }
     throw new Error(`Gemini Grading Failed: ${response.status} - ${txt}`);
   }
   const data: any = await response.json();
