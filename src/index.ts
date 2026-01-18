@@ -67,7 +67,7 @@ app.get('/', (c) => {
              <div class="flex gap-6">
                  <label class="inline-flex items-center cursor-pointer">
                      <input type="checkbox" id="useGemini" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500" checked>
-                     <span class="ml-2 text-gray-700 font-medium">✨ Gemini 1.5 Pro</span>
+                     <span class="ml-2 text-gray-700 font-medium">✨ Gemini 2.5 Pro</span>
                  </label>
                  <label class="inline-flex items-center cursor-pointer">
                      <input type="checkbox" id="useDeepSeek" class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500" checked>
@@ -98,7 +98,7 @@ app.get('/', (c) => {
             <!-- Gemini -->
             <div class="bg-green-50 rounded-lg border border-green-200 shadow-sm flex flex-col">
               <div class="p-4 border-b border-green-200 bg-green-100 rounded-t-lg flex justify-between items-center">
-                <h2 class="text-xl font-bold text-green-800">🤖 Gemini 1.5 Pro</h2>
+                <h2 class="text-xl font-bold text-green-800">🤖 Gemini 2.5 Pro</h2>
                 <span class="text-xs bg-green-600 text-white px-2 py-1 rounded">Fast & Creative</span>
               </div>
               <div id="geminiResult" class="p-6 prose prose-sm max-w-none overflow-auto flex-1 h-[600px]"></div>
@@ -312,7 +312,7 @@ app.post('/api/grade', async (c) => {
 // --- Helpers ---
 
 async function callGeminiOCR(apiKey: string, images: { base64: string, mime: string }[]) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   // Construct parts: Text Instruction + Image1 + Image2 ...
   const parts: any[] = [
@@ -346,7 +346,7 @@ async function callGeminiOCR(apiKey: string, images: { base64: string, mime: str
 }
 
 async function callGeminiGrading(apiKey: string, prompt: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
